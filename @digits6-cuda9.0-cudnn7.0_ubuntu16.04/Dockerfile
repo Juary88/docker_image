@@ -1,8 +1,13 @@
-#This docker file is inherented from NVIDIA Digits docker file https://gitlab.com/nvidia/digits/blob/master/6.0/Dockerfile
+#his docker file is inherented from NVIDIA Digits docker file https://gitlab.com/nvidia/digits/blob/master/6.0/Dockerfile
 # Base Image: amax/general:9.0-devel-cudnn7.0_ubuntu16.04_v01
 # Image Content:
 #	Digits 6.0.1 (Caffe 0.15.14, torch 0.10.7-1(CUDA8.0), tensorflow 1.2.1) 
+# Know issue:
+#      	Tensorflow 1.2.1 currently doesn't support cuDNN 7 and CUDA 9. It will support on T ensorFlow 1.5.0
+#	https://github.com/tensorflow/tensorflow/releases
 
+
+### Build protobuf module ###
 FROM ubuntu:16.04 as protobuf
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -25,6 +30,7 @@ RUN git clone -b '3.2.x' https://github.com/google/protobuf.git . && \
     ./configure --prefix=/usr/local/protobuf && \
     make "-j$(nproc)" install
 
+### Build latest version "nccl" which required by latest version caffe and digits ###
 FROM amax/general:9.0-devel-cudnn7.0_ubuntu16.04_v01 as nccl
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	git \
@@ -51,7 +57,8 @@ RUN git clone https://github.com/NVIDIA/nccl.git /nccl && \
     make CUDA_HOME=/usr/local/cuda "-j$(nproc)"  && \
     make PREFIX=/usr/local/nccl install
 
-
+### Build the caffe(0.15). At this moment, caffe 0.16 has been released already. 
+### We provide to customer 0.16 ifi customer need
 FROM amax/general:9.0-devel-cudnn7.0_ubuntu16.04_v01 as caffe
 
 COPY --from=protobuf /usr/local/protobuf /usr/local
@@ -89,7 +96,8 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py && \
     pip install --upgrade --no-cache-dir pip
 
-# Build caffe
+# Build caffe with cudnn and nccl support. 
+# Once the new GPU come out we may need to change the cuda-arch-bin version to support new driver and cards
 RUN git clone https://github.com/nvidia/caffe.git /caffe -b 'caffe-0.15' && \
     cd /caffe && \
     pip install ipython==5.4.1 && \
@@ -101,6 +109,7 @@ RUN git clone https://github.com/nvidia/caffe.git /caffe -b 'caffe-0.15' && \
     rm -rf /caffe
 
 
+### Build the digits6.0 image based on CUDA9 w/Dev toolkit and cudnn7 on Ubuntu16.04
 FROM amax/general:9.0-devel-cudnn7.0_ubuntu16.04_v01
 
 LABEL maintainer "AMAX Information Technologies Inc <support@amax.com>"
@@ -159,7 +168,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         rsync  \
 	torch7-nv=0.10.7-1ubuntu16.04+cuda8.0 && \
     rm -rf /var/lib/apt/lists/* 
-
+## This this image, I used the torch7-nv 0.10.7-1 which prebuild under ubuntu16.04 cuda8 which also compatiable with cuda9
 
 
 

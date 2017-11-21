@@ -3,6 +3,8 @@
 # Image Content:
 #	Digits 6.0.1 (Caffe 0.15.14, torch 0.10.7-1, tensorflow 1.2.1) 
 
+
+### Build protobuf module
 FROM ubuntu:16.04 as protobuf
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -26,6 +28,7 @@ RUN git clone -b '3.2.x' https://github.com/google/protobuf.git . && \
     make "-j$(nproc)" install
 
 
+### Build caffe (0.15)a caffe 0.16 also avaliable now
 FROM amax/general:8.0-devel-cudnn7.0_ubuntu16.04_v01 as caffe
 
 COPY --from=protobuf /usr/local/protobuf /usr/local
@@ -62,7 +65,7 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py && \
     pip install --upgrade --no-cache-dir pip
 
-# Build caffe
+# Build caffe with nccl and cudnn support
 RUN git clone https://github.com/nvidia/caffe.git /caffe -b 'caffe-0.15' && \
     cd /caffe && \
     pip install ipython==5.4.1 && \
@@ -74,7 +77,7 @@ RUN git clone https://github.com/nvidia/caffe.git /caffe -b 'caffe-0.15' && \
     rm -rf /caffe
 
 
-
+### Build digts 6 image baased on cuad 8 w/development toolkits and cudnn 7 under ubuntu 16.04
 FROM amax/general:8.0-devel-cudnn7.0_ubuntu16.04_v01
 
 LABEL maintainer "AMAX Information Technologies Inc <support@amax.com>"

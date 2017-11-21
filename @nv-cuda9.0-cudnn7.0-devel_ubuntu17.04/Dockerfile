@@ -1,6 +1,10 @@
+# This configuration file is inherenced from NVIDIA dockerfile
+# Please refer to the LICENSE
+
+
 ARG repository
 FROM ${repository}:9.0-devel-ubuntu17.04
-LABEL maintainer "NVIDIA CORPORATION <cudatools@nvidia.com>"
+LABEL maintainer "AMAX INFORMATION TECHNOLOGIES INC <SUPPORT@AMAX.COM>"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         cuda-libraries-dev-$CUDA_PKG_VERSION \

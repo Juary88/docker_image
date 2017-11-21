@@ -3,6 +3,7 @@
 # Image Content:
 #	Digits 6.0.1 (Caffe 0.15.14, torch 0.9.99-1, tensorflow 1.2.1) 
 
+### Build protobuf module
 FROM ubuntu:14.04 as protobuf
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -25,7 +26,7 @@ RUN git clone -b '3.2.x' https://github.com/google/protobuf.git . && \
     ./configure --prefix=/usr/local/protobuf && \
     make "-j$(nproc)" install
 
-
+### Build caffe 0.15
 FROM amax/general:8.0-devel-cudnn7.0_ubuntu14.04_v01 as caffe
 
 COPY --from=protobuf /usr/local/protobuf /usr/local
@@ -74,7 +75,7 @@ RUN git clone https://github.com/nvidia/caffe.git /caffe -b 'caffe-0.15' && \
     rm -rf /caffe
 
 
-
+# Build digits 6 based cuda 8 w/develpment toolkit, cudnn 7 under ubuntu14.04
 FROM amax/general:8.0-devel-cudnn7.0_ubuntu14.04_v01
 
 LABEL maintainer "AMAX Information Technologies Inc <support@amax.com>"
