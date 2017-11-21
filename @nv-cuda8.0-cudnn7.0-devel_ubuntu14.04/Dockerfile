@@ -1,3 +1,8 @@
+# This confiration file is inheritancd from NVIDIA CUDA dockerfile
+# Ref: https://gitlab.com/nvidia/cuda 
+# This image is build on Ubuntu 14.04 with CUDA 8.0 Development Toolkit, and cuDNN 7.0.3.11
+
+
 ARG repository
 FROM ${repository}:8.0-devel-ubuntu14.04
 LABEL maintainer "NVIDIA CORPORATION <cudatools@nvidia.com>"
