@@ -1,5 +1,4 @@
 # This version uses the latest version of mxnet=
-# In the next verioin, the tensorboard will be added into this image since mxnet could exam the training performance by using tensorboard
 FROM amax/general:8.0-devel-cudnn7.0_ubuntu16.04_v01 as mxnet
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	build-essential \
@@ -104,7 +103,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	libopenblas-base \
 	virtualenv \
 	graphviz \
-	libblas3 && \
+	libcupti-dev && \
     rm -rf /var/lib/apt/lists/*
 
 
@@ -123,6 +122,8 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     rm /usr/local/share/jupyter/kernels/* -rf && \
     python2 -m ipykernel install && \
     python3 -m ipykernel install && \
+    pip3 install tensorboard && \
+    pip2 install tensorboard && \ 
     rm /tmp/* -rf && \
     mkdir -p /opt/notebooks 
 
@@ -133,6 +134,9 @@ ENV NOTEBOOK_TOKEN="amax"
 
 ## Export Jupyter Notebook
 EXPOSE 8888
+
+##  Export Tensorboard  port 
+EXPOSE 6006
 
 ## When use this image in our environment, we should use the --entrypoint to overwrite this default.
 ## And we can add --ip=192.x.x.x to make sure the jupyter notebook can listening on a non-localhost ip.
