@@ -71,7 +71,7 @@ RUN mkdir /wheel2 /wheel3 && \
 ## Build the mxnet docker image
 FROM amax/general:9.0-devel-cudnn7.0_ubuntu16.04_v01
 COPY --from=mxnet /usr/local/nccl/ /usr/local
-COPY --from=mxnet /mxnet/ /tmp/mxnet
+COPY --from=mxnet /mxnet/ /opt/mxnet
 COPY --from=mxnet /wheel2/ /tmp/wheel2
 COPY --from=mxnet /wheel3/ /tmp/wheel3
 
@@ -116,7 +116,7 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     pip3 install --upgrade --no-cache-dir pip && \
     pip2 install /tmp/wheel2/*.whl --no-cache-dir && \
     pip3 install /tmp/wheel3/*.whl  --no-cache-dir && \
-    cd /tmp/mxnet/python && \
+    cd /opt/mxnet/python && \
     python2 setup.py install && \
     python3 setup.py install && \
     rm /usr/local/share/jupyter/kernels/* -rf && \
@@ -125,12 +125,15 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     pip3 install tensorboard && \
     pip2 install tensorboard && \ 
     rm /tmp/* -rf && \
-    mkdir -p /opt/notebooks 
+    mkdir -p /opt/notebooks && \
+    rm /bin/sh && \
+    ln -s /bin/bash /bin/sh
 
 ## Notebook dir
 ENV NOTEBOOK_DIR=/opt/notebooks
 ENV NOTEBOOK_IP=0.0.0.0
 ENV NOTEBOOK_TOKEN="amax"
+ENV MXNET_ROOT=/opt/mxnet
 
 ## Export Jupyter Notebook
 EXPOSE 8888
@@ -141,4 +144,6 @@ EXPOSE 6006
 ## When use this image in our environment, we should use the --entrypoint to overwrite this default.
 ## And we can add --ip=192.x.x.x to make sure the jupyter notebook can listening on a non-localhost ip.
 # ENTRYPOINT ["jupyter", "notebook", "--notebook-dir=NOTEBOOK_DIR"]
-ENTRYPOINT jupyter notebook --notebook-dir=$NOTEBOOK_DIR --ip=$NOTEBOOK_IP --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root
+ENTRYPOINT source /root/.bashrc && \
+	   export SHELL=/bin/bash && \
+	   jupyter notebook --notebook-dir=$NOTEBOOK_DIR --ip=$NOTEBOOK_IP --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root
