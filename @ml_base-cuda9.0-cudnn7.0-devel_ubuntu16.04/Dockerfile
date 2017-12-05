@@ -106,7 +106,9 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
 	cd /tmp && \
 	pip install ./*.whl && \
 	mkdir -p /opt/notebooks && \
-	rm -rf /tmp/*.whl
+	rm -rf /tmp/*.whl &&
+	rm /bin/sh && \
+	ln -s /bin/bash /bin/sh
 
 ## Notebook dir
 ENV NOTEBOOK_DIR=/opt/notebooks
@@ -118,5 +120,7 @@ EXPOSE 8888
 ## When use this image in our environment, we should use the --entrypoint to overwrite this default.
 ## And we can add --ip=192.x.x.x to make sure the jupyter notebook can listening on a non-localhost ip.
 # ENTRYPOINT ["jupyter", "notebook", "--notebook-dir=NOTEBOOK_DIR"]
-ENTRYPOINT jupyter notebook --notebook-dir=$NOTEBOOK_DIR --ip=$NOTEBOOK_IP --allow-root
+ENTRYPOINT source /root/.bashrc && \
+	export SHELL=/bin/bash && \
+	jupyter notebook --notebook-dir=$NOTEBOOK_DIR --ip=$NOTEBOOK_IP --allow-root
 
